@@ -45,10 +45,10 @@ make install
 
 #### Docker
 
-A docker image is available as well. Here is an example of running terse as a background service:
+A docker image is available as well. Here is an example of running terse in a pipeline with docker:
 
 ```sh
-docker run -i --rm yarmak/terse
+seq 5 | docker run -i --rm yarmak/terse
 ```
 
 ## Synopsis
