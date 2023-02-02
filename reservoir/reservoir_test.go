@@ -45,3 +45,14 @@ func TestOverflow(t *testing.T) {
 		t.Fatalf("unexpected lenght: %d", len(res))
 	}
 }
+
+func TestZeroSize(t *testing.T) {
+	r := NewReservoir[int](0, rand.New(rand.NewSource(0)))
+	for i := 0; i < 10; i++ {
+		r.Add(i)
+	}
+	res := r.Items()
+	if len(res) != 0 {
+		t.Fatalf("unexpected lenght: %d", len(res))
+	}
+}

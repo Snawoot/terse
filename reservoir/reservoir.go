@@ -2,10 +2,13 @@ package reservoir
 
 import "sort"
 
+// RNG compatible with math/rand PRNG.
 type RNG interface {
 	Int63n(n int64) int64
 }
 
+// Implements reservoir sampling algorithm, but also retains 
+// original order of elements.
 type Reservoir[T any] struct {
 	size     int
 	rng      RNG
@@ -18,6 +21,7 @@ type chosenItem[T any] struct {
 	item  T
 }
 
+// Created new Reservoir instance. Function will panic if size is negative.
 func NewReservoir[T any](size int, rng RNG) *Reservoir[T] {
 	if size < 0 {
 		panic("negative reservoir size")
@@ -29,6 +33,7 @@ func NewReservoir[T any](size int, rng RNG) *Reservoir[T] {
 	}
 }
 
+// Adds another candidate item to reservoir
 func (r *Reservoir[T]) Add(item T) {
 	newElem := chosenItem[T]{
 		seqNo: r.consumed,
@@ -45,6 +50,7 @@ func (r *Reservoir[T]) Add(item T) {
 	}
 }
 
+// Gets sampled items
 func (r *Reservoir[T]) Items() []T {
 	chosen := make([]chosenItem[T], len(r.chosen))
 	copy(chosen, r.chosen)
