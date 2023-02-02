@@ -48,7 +48,7 @@ make install
 A docker image is available as well. Here is an example of running terse as a background service:
 
 ```sh
-docker run -it --rm yarmak/terse
+docker run -i --rm yarmak/terse
 ```
 
 ## Synopsis
