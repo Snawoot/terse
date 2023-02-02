@@ -1,5 +1,5 @@
 # terse
-Output randomly sampled lines from input stream or file. Uses simple reservoir sampling algorithm to process input with linear time complexity. Suitable for processing streams, seeing each line only once. Retains relative order of lines.
+Output randomly sampled lines from input stream or file. Uses simple [reservoir sampling](http://www.cs.umd.edu/~samir/498/vitter.pdf) algorithm to process input with linear time complexity. Suitable for processing streams, seeing each line only once. Retains relative order of lines.
 
 ## Usage example
 
