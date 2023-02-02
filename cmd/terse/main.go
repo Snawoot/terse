@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 
@@ -19,10 +20,13 @@ const (
 var (
 	version = "undefined"
 
-	showVersion  = flag.Bool("version", false, "show program version and exit")
-	limit        = flag.Int("n", 25, "number of lines to sample")
-	nulDelimiter = flag.Bool("z", false, "line delimiter is NUL, not newline")
-	seed         *int64
+	showVersion    = flag.Bool("version", false, "show program version and exit")
+	limit          = flag.Int("n", 25, "number of lines to sample")
+	nulDelimiter   = flag.Bool("z", false, "line delimiter is NUL, not newline")
+	inputFilename  = flag.String("i", "", "use input file instead of stdin")
+	outputFilename = flag.String("o", "", "use output file instead of stdout")
+	buffered       = flag.Bool("buffered", true, "buffer control")
+	seed           *int64
 )
 
 func init() {
@@ -61,9 +65,41 @@ func run() int {
 		return 2
 	}
 
+	var input io.Reader = os.Stdin
+	if *inputFilename != "" {
+		f, err := os.Open(*inputFilename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "unable to open input file: %v\n", err)
+			return 3
+		}
+		defer f.Close()
+		input = f
+	}
+	var output io.Writer = os.Stdout
+	if *outputFilename != "" {
+		f, err := os.Create(*outputFilename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "unable to open output file: %v\n", err)
+			return 4
+		}
+		defer func() {
+			f.Sync()
+			f.Close()
+		}()
+		output = f
+	}
+
+	if *buffered {
+		buffin := bufio.NewReader(input)
+		input = buffin
+		buffout := bufio.NewWriter(output)
+		defer buffout.Flush()
+		output = buffout
+	}
+
 	r := reservoir.NewReservoir[string](*limit, rng.NewRNG(seed))
 
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(input)
 	if *nulDelimiter {
 		scanner.Split(scanZeroTerminatedLines)
 	}
@@ -73,11 +109,22 @@ func run() int {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "read error: %v", err)
+		fmt.Fprintf(os.Stderr, "read error: %v\n", err)
 	}
 
+	delimiter := []byte{'\n'}
+	if *nulDelimiter {
+		delimiter = []byte{0}
+	}
 	for _, line := range r.Items() {
-		fmt.Println(line)
+
+		if _, err := output.Write([]byte(line)); err != nil {
+			fmt.Fprintf(os.Stderr, "write error: %v\n", err)
+		}
+
+		if _, err := output.Write(delimiter); err != nil {
+			fmt.Fprintf(os.Stderr, "write error: %v\n", err)
+		}
 	}
 
 	return 0
