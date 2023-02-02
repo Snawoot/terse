@@ -6,6 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
+
+	"github.com/Snawoot/terse/reservoir"
+	"github.com/Snawoot/terse/rng"
 )
 
 const (
@@ -18,7 +22,19 @@ var (
 	showVersion  = flag.Bool("version", false, "show program version and exit")
 	limit        = flag.Int("n", 25, "number of lines to sample")
 	nulDelimiter = flag.Bool("z", false, "line delimiter is NUL, not newline")
+	seed         *int64
 )
+
+func init() {
+	flag.Func("seed", "use fixed random seed (default is a value from CSPRNG)", func(val string) error {
+		seedVal, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			return fmt.Errorf("unable to parse seed value: %w", err)
+		}
+		seed = &seedVal
+		return nil
+	})
+}
 
 func usage() {
 	out := flag.CommandLine.Output()
@@ -39,16 +55,29 @@ func run() int {
 		return 0
 	}
 
+	if *limit < 0 {
+		fmt.Fprintln(os.Stderr, "error: negative limit value")
+		usage()
+		return 2
+	}
+
+	r := reservoir.NewReservoir[string](*limit, rng.NewRNG(seed))
+
 	scanner := bufio.NewScanner(os.Stdin)
 	if *nulDelimiter {
 		scanner.Split(scanZeroTerminatedLines)
 	}
+
 	for scanner.Scan() {
-		fmt.Printf("read: %q\n", scanner.Text())
+		r.Add(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintf(os.Stderr, "read error: %v", err)
+	}
+
+	for _, line := range r.Items() {
+		fmt.Println(line)
 	}
 
 	return 0
