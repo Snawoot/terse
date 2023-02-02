@@ -7,7 +7,7 @@ type RNG interface {
 	Int63n(n int64) int64
 }
 
-// Implements reservoir sampling algorithm, but also retains 
+// Implements reservoir sampling algorithm, but also retains
 // original order of elements.
 type Reservoir[T any] struct {
 	size     int
