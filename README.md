@@ -14,7 +14,7 @@ Output randomly sampled lines from input stream or file. Uses simple [reservoir 
 
 ## Performance
 
-Comparison against `shuf -n`  on real data: 5.1Gb nginx log with 17451712  lines in it.
+Comparison against `shuf -n`  on real data: 5.1GB nginx log with 17451712  lines in it.
 
 ```
 root@logger:~# ls -lh /var/log/remote/nginx/2023_02_02_18.log
