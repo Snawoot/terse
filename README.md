@@ -15,16 +15,16 @@ Output randomly sampled lines from input stream or file. Uses simple [reservoir 
 ## Performance
 
 ```
-> time seq 100000000 | bin/terse -n 5
-41432706
-56746242
-61118996
-70135895
-93968158
+> time seq 100000000 | terse -n 5
+9014744
+30087776
+49353454
+52473318
+66320811
 
-real	0m5,106s
-user	0m5,676s
-sys	0m0,430s
+real    0m3.648s
+user    0m4.018s
+sys     0m1.721s
 ```
 
 It processes about tens of millions of lines per second on modern computer. Most likely I/O will become bottleneck in such sampling rather than application performance will be an issue.
@@ -54,7 +54,7 @@ seq 5 | docker run -i --rm yarmak/terse
 ## Synopsis
 
 ```
-$ terse -h
+> terse -h
 Usage:
 
 terse [OPTION]...
