@@ -26,12 +26,12 @@ var (
 	inputFilename  = flag.String("i", "", "use input file instead of stdin")
 	outputFilename = flag.String("o", "", "use output file instead of stdout")
 	buffered       = flag.Bool("buffered", true, "buffer control")
-	seed           *int64
+	seed           *uint64
 )
 
 func init() {
 	flag.Func("seed", "use fixed random seed (default is a value from CSPRNG)", func(val string) error {
-		seedVal, err := strconv.ParseInt(val, 10, 64)
+		seedVal, err := strconv.ParseUint(val, 10, 64)
 		if err != nil {
 			return fmt.Errorf("unable to parse seed value: %w", err)
 		}
@@ -105,7 +105,9 @@ func run() int {
 	}
 
 	for scanner.Scan() {
-		r.Add(scanner.Text())
+		if idx := r.AddViaIndex(); idx >= 0 {
+			r.Load(idx, scanner.Text())
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
