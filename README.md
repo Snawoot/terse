@@ -14,17 +14,23 @@ Output randomly sampled lines from input stream or file. Uses simple [reservoir 
 
 ## Performance
 
-```
-> time seq 100000000 | terse -n 5
-9014744
-30087776
-49353454
-52473318
-66320811
+Comparison against `shuf -n`  on real data: 5.1Gb nginx log with 17451712  lines in it.
 
-real    0m3.648s
-user    0m4.018s
-sys     0m1.721s
+```
+root@logger:~# ls -lh /var/log/remote/nginx/2023_02_02_18.log
+-rw-r----- 1 root logs 5.1G Feb  2 18:59 /var/log/remote/nginx/2023_02_02_18.log
+root@logger:~# wc -l /var/log/remote/nginx/2023_02_02_18.log
+17451712 /var/log/remote/nginx/2023_02_02_18.log
+root@logger:~# time terse -i /var/log/remote/nginx/2023_02_02_18.log -n 25 > /dev/null
+
+real    0m2.656s
+user    0m1.315s
+sys     0m1.372s
+root@logger:~# time shuf -n 25 /var/log/remote/nginx/2023_02_02_18.log > /dev/null
+
+real    0m22.784s
+user    0m21.059s
+sys     0m1.703s
 ```
 
 It processes about tens of millions of lines per second on modern computer. Most likely I/O will become bottleneck in such sampling rather than application performance will be an issue.
